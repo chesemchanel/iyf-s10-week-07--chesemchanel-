@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Week 7 — JS Best Practices</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet" />
+  <style>
+    /* ── CSS Variables / Theme ── */
+    :root {
+      --bg: #0d0d0f;
+      --surface: #18181c;
+      --surface2: #222228;
+      --border: #2e2e38;
+      --accent: #7fff6e;
+      --accent2: #ff6e6e;
+      --text: #f0f0f4;
+      --muted: #888898;
+      --radius: 10px;
+      --font-mono: 'Space Mono', monospace;
+      --font-display: 'Syne', sans-serif;
+    }
+    [data-theme="light"] {
+      --bg: #f4f4f0;
+      --surface: #ffffff;
+      --surface2: #ebebeb;
+      --border: #d0d0c8;
+      --accent: #2a7a1f;
+      --accent2: #c0392b;
+      --text: #111118;
+      --muted: #666670;
+    }
+
+    /* ── Reset ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-display);
+      min-height: 100vh;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    /* ── Layout ── */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.2rem 2rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    header h1 {
+      font-size: 1.1rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+    header h1 span { color: var(--accent); }
+
+    .theme-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.4rem 1rem;
+      border-radius: 20px;
+      cursor: pointer;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      transition: all 0.2s;
+    }
+    .theme-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    .tabs {
+      display: flex;
+      gap: 0;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+    }
+    .tab-btn {
+      flex: 1;
+      min-width: 120px;
+      padding: 0.9rem 1rem;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .tab-btn:hover { color: var(--text); }
+
+    .tab-content { display: none; padding: 2rem; max-width: 700px; margin: 0 auto; }
+    .tab-content.active { display: block; }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .card h2 {
+      font-size: 1rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .badge {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      background: var(--accent);
+      color: #000;
+    }
+
+    /* ── Inputs ── */
+    .input-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    input[type="text"], textarea, select {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      padding: 0.6rem 0.9rem;
+      font-family: var(--font-display);
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input[type="text"]:focus, textarea:focus, select:focus {
+      border-color: var(--accent);
+    }
+    textarea { resize: vertical; min-height: 80px; }
+
+    .btn {
+      background: var(--accent);
+      color: #000;
+      border: none;
+      border-radius: var(--radius);
+      padding: 0.6rem 1.2rem;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn:active { transform: scale(0.97); }
+    .btn-danger {
+      background: var(--accent2);
+      color: #fff;
+    }
+    .btn-outline {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── To-Do List ── */
+    .filter-row {
+      display: flex;
+      gap: 0.4rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+    .filter-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 0.35rem 0.8rem;
+      border-radius: 20px;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .filter-btn.active {
+      background: var(--accent);
+      color: #000;
+      border-color: var(--accent);
+    }
+    #todo-list { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+    .todo-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.7rem 1rem;
+      animation: slideIn 0.2s ease;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .todo-item.completed .todo-text {
+      text-decoration: line-through;
+      color: var(--muted);
+    }
+    .todo-check {
+      width: 18px; height: 18px;
+      accent-color: var(--accent);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .todo-text { flex: 1; font-size: 0.9rem; }
+    .todo-del {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 0.1rem 0.3rem;
+      border-radius: 4px;
+      transition: color 0.2s;
+    }
+    .todo-del:hover { color: var(--accent2); }
+    .todo-stats {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 0.8rem;
+    }
+    #clear-completed {
+      margin-top: 0.5rem;
+    }
+
+    /* ── Search with Recent ── */
+    .search-wrap { position: relative; }
+    #search-dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0; right: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      z-index: 50;
+      overflow: hidden;
+    }
+    .search-hist-item {
+      padding: 0.6rem 0.9rem;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: background 0.15s;
+    }
+    .search-hist-item:hover { background: var(--surface2); }
+    .search-hist-item span { color: var(--muted); font-size: 0.75rem; }
+    #search-results {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      margin-top: 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      min-height: 50px;
+      display: none;
+    }
+
+    /* ── Auto-save Form ── */
+    .form-group { margin-bottom: 1rem; }
+    .form-group label {
+      display: block;
+      font-size: 0.78rem;
+      font-family: var(--font-mono);
+      color: var(--muted);
+      margin-bottom: 0.3rem;
+    }
+    .autosave-indicator {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .autosave-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--muted);
+      transition: background 0.3s;
+    }
+    .autosave-dot.saved { background: var(--accent); }
+
+    /* ── Empty state ── */
+    .empty {
+      text-align: center;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      padding: 2rem 0;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Week <span>7</span> — JS Best Practices</h1>
+  <button class="theme-btn" id="theme-toggle">☀ / ☾ Toggle Theme</button>
+</header>
+
+<nav class="tabs">
+  <button class="tab-btn active" data-tab="todo">📋 To-Do List</button>
+  <button class="tab-btn" data-tab="search">🔍 Recent Searches</button>
+  <button class="tab-btn" data-tab="form">💾 Auto-Save Form</button>
+</nav>
+
+<!-- ══ TAB 1: To-Do List ══ -->
+<section class="tab-content active" id="tab-todo">
+  <div class="card">
+    <h2>To-Do List <span class="badge">localStorage</span></h2>
+    <div class="input-row">
+      <input type="text" id="todo-input" placeholder="Add a new task…" maxlength="120" />
+      <button class="btn" id="todo-add">Add</button>
+    </div>
+    <div class="filter-row">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="active">Active</button>
+      <button class="filter-btn" data-filter="completed">Completed</button>
+    </div>
+    <ul id="todo-list"></ul>
+    <p class="todo-stats" id="todo-stats"></p>
+    <button class="btn btn-outline" id="clear-completed" style="display:none">Clear Completed</button>
+  </div>
+</section>
+
+<!-- ══ TAB 2: Recent Searches ══ -->
+<section class="tab-content" id="tab-search">
+  <div class="card">
+    <h2>Search <span class="badge">localStorage</span></h2>
+    <div class="search-wrap">
+      <div class="input-row">
+        <div style="position:relative;flex:1;">
+          <input type="text" id="search-input" placeholder="Search for something…" autocomplete="off" />
+          <div id="search-dropdown"></div>
+        </div>
+        <button class="btn" id="search-btn">Search</button>
+      </div>
+    </div>
+    <div id="search-results"></div>
+  </div>
+  <div class="card">
+    <h2>Recent History</h2>
+    <div id="search-history-list"></div>
+    <button class="btn btn-outline" id="clear-history" style="margin-top:0.5rem">Clear History</button>
+  </div>
+</section>
+
+<!-- ══ TAB 3: Auto-Save Form ══ -->
+<section class="tab-content" id="tab-form">
+  <div class="card">
+    <h2>Contact Form <span class="badge">sessionStorage</span></h2>
+    <p style="font-size:0.8rem;color:var(--muted);margin-bottom:1rem;font-family:var(--font-mono);">
+      Fields auto-save every 5 seconds. Data recovers on refresh. Cleared on submit.
+    </p>
+    <div id="contact-form">
+      <div class="form-group">
+        <label for="f-name">Full Name</label>
+        <input type="text" id="f-name" name="name" placeholder="Your name" />
+      </div>
+      <div class="form-group">
+        <label for="f-email">Email</label>
+        <input type="text" id="f-email" name="email" placeholder="you@example.com" />
+      </div>
+      <div class="form-group">
+        <label for="f-subject">Subject</label>
+        <input type="text" id="f-subject" name="subject" placeholder="What's this about?" />
+      </div>
+      <div class="form-group">
+        <label for="f-message">Message</label>
+        <textarea id="f-message" name="message" placeholder="Write your message…"></textarea>
+      </div>
+      <div class="autosave-indicator">
+        <div class="autosave-dot" id="save-dot"></div>
+        <span id="save-status">Waiting to save…</span>
+      </div>
+      <div style="display:flex;gap:0.5rem;margin-top:1rem;">
+        <button class="btn" id="form-submit">Submit</button>
+        <button class="btn btn-outline" id="form-clear">Clear</button>
+      </div>
+    </div>
+    <div id="form-success" style="display:none;text-align:center;padding:2rem;">
+      <div style="font-size:2.5rem;">✅</div>
+      <p style="font-family:var(--font-mono);font-size:0.9rem;margin-top:0.5rem;">Form submitted! Data cleared.</p>
+      <button class="btn" id="form-reset" style="margin-top:1rem">Submit Another</button>
+    </div>
+  </div>
+</section>
+
+<script>
+/* ═══════════════════════════════════════════════
+   THEME PERSISTENCE  (Day 1 Daily Challenge ✅)
+   ═══════════════════════════════════════════════ */
+const ThemeManager = (() => {
+  const KEY = 'theme_preference';
+  const root = document.documentElement;
+  const btn = document.getElementById('theme-toggle');
+
+  const apply = (theme) => {
+    root.setAttribute('data-theme', theme);
+    localStorage.setItem(KEY, theme);
+    btn.textContent = theme === 'dark' ? '☀ Light Mode' : '☾ Dark Mode';
+  };
+
+  const toggle = () => {
+    const current = root.getAttribute('data-theme');
+    apply(current === 'dark' ? 'light' : 'dark');
+  };
+
+  const init = () => {
+    const saved = localStorage.getItem(KEY) ?? 'dark';
+    apply(saved);
+    btn.addEventListener('click', toggle);
+  };
+
+  return { init };
+})();
+
+ThemeManager.init();
+
+
+/* ═══════════════════════════════════════════════
+   TO-DO LIST  (Task 13.2 ✅)
+   ═══════════════════════════════════════════════ */
+const TodoApp = (() => {
+  const STORAGE_KEY = 'todos_v1';
+  const FILTER_KEY = 'todo_filter';
+
+  let todos = [];
+  let currentFilter = 'all';
+
+  // Load from localStorage
+  const load = () => {
+    try {
+      todos = JSON.parse(localStorage.getItem(STORAGE_KEY)) ?? [];
+    } catch {
+      todos = [];
+    }
+    currentFilter = localStorage.getItem(FILTER_KEY) ?? 'all';
+  };
+
+  // Save to localStorage
+  const save = () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
+  };
+
+  const saveFilter = () => {
+    localStorage.setItem(FILTER_KEY, currentFilter);
+  };
+
+  const generateId = () => `todo_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+
+  const addTodo = (text) => {
+    if (!text.trim()) return;
+    todos.push({ id: generateId(), text: text.trim(), completed: false });
+    save();
+    render();
+  };
+
+  const toggleTodo = (id) => {
+    const todo = todos.find(t => t.id === id);
+    if (todo) {
+      todo.completed = !todo.completed;
+      save();
+      render();
+    }
+  };
+
+  const deleteTodo = (id) => {
+    todos = todos.filter(t => t.id !== id);
+    save();
+    render();
+  };
+
+  const clearCompleted = () => {
+    todos = todos.filter(t => !t.completed);
+    save();
+    render();
+  };
+
+  const getFiltered = () => {
+    if (currentFilter === 'active') return todos.filter(t => !t.completed);
+    if (currentFilter === 'completed') return todos.filter(t => t.completed);
+    return todos;
+  };
+
+  const render = () => {
+    const list = document.getElementById('todo-list');
+    const stats = document.getElementById('todo-stats');
+    const clearBtn = document.getElementById('clear-completed');
+    const filtered = getFiltered();
+
+    if (filtered.length === 0) {
+      list.innerHTML = `<li class="empty">No tasks here 👻</li>`;
+    } else {
+      list.innerHTML = filtered.map(todo => `
+        <li class="todo-item ${todo.completed ? 'completed' : ''}" data-id="${todo.id}">
+          <input class="todo-check" type="checkbox" ${todo.completed ? 'checked' : ''} />
+          <span class="todo-text">${escapeHtml(todo.text)}</span>
+          <button class="todo-del" title="Delete">✕</button>
+        </li>
+      `).join('');
+    }
+
+    const active = todos.filter(t => !t.completed).length;
+    const done = todos.filter(t => t.completed).length;
+    stats.textContent = `${active} remaining · ${done} done · ${todos.length} total`;
+    clearBtn.style.display = done > 0 ? 'inline-block' : 'none';
+
+    // Update filter buttons
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.filter === currentFilter);
+    });
+  };
+
+  const escapeHtml = (str) => {
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  };
+
+  const init = () => {
+    load();
+    render();
+
+    const input = document.getElementById('todo-input');
+    document.getElementById('todo-add').addEventListener('click', () => {
+      addTodo(input.value);
+      input.value = '';
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        addTodo(input.value);
+        input.value = '';
+      }
+    });
+
+    document.getElementById('todo-list').addEventListener('click', (e) => {
+      const item = e.target.closest('.todo-item');
+      if (!item) return;
+      const id = item.dataset.id;
+      if (e.target.classList.contains('todo-check')) toggleTodo(id);
+      if (e.target.classList.contains('todo-del')) deleteTodo(id);
+    });
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentFilter = btn.dataset.filter;
+        saveFilter();
+        render();
+      });
+    });
+
+    document.getElementById('clear-completed').addEventListener('click', clearCompleted);
+  };
+
+  return { init };
+})();
+
+TodoApp.init();
+
+
+/* ═══════════════════════════════════════════════
+   RECENT SEARCHES  (Day 2 Daily Challenge ✅)
+   ═══════════════════════════════════════════════ */
+const SearchApp = (() => {
+  const KEY = 'recent_searches';
+  const MAX_HISTORY = 5;
+
+  const getHistory = () => {
+    try {
+      return JSON.parse(localStorage.getItem(KEY)) ?? [];
+    } catch {
+      return [];
+    }
+  };
+
+  const saveHistory = (history) => {
+    localStorage.setItem(KEY, JSON.stringify(history));
+  };
+
+  const addSearch = (query) => {
+    if (!query.trim()) return;
+    let history = getHistory().filter(q => q !== query.trim());
+    history.unshift(query.trim());
+    history = history.slice(0, MAX_HISTORY);
+    saveHistory(history);
+  };
+
+  const renderHistoryList = () => {
+    const history = getHistory();
+    const container = document.getElementById('search-history-list');
+    if (history.length === 0) {
+      container.innerHTML = '<p class="empty">No recent searches yet.</p>';
+    } else {
+      container.innerHTML = history.map(q => `
+        <div class="search-hist-item" data-query="${q}">
+          <span>🕐</span> ${q}
+        </div>
+      `).join('');
+    }
+  };
+
+  const showDropdown = () => {
+    const history = getHistory();
+    const dropdown = document.getElementById('search-dropdown');
+    if (history.length === 0) { dropdown.style.display = 'none'; return; }
+    dropdown.innerHTML = history.map(q => `
+      <div class="search-hist-item" data-query="${q}">
+        <span>🕐</span> ${q}
+      </div>
+    `).join('');
+    dropdown.style.display = 'block';
+  };
+
+  const hideDropdown = () => {
+    setTimeout(() => {
+      document.getElementById('search-dropdown').style.display = 'none';
+    }, 150);
+  };
+
+  const performSearch = (query) => {
+    if (!query.trim()) return;
+    addSearch(query);
+    const results = document.getElementById('search-results');
+    results.style.display = 'block';
+    results.innerHTML = `🔍 Searched for: <strong>"${query}"</strong><br><span style="color:var(--muted)">// Results would appear here from an API</span>`;
+    renderHistoryList();
+    showDropdown();
+  };
+
+  const init = () => {
+    renderHistoryList();
+    const input = document.getElementById('search-input');
+    const btn = document.getElementById('search-btn');
+    const dropdown = document.getElementById('search-dropdown');
+
+    btn.addEventListener('click', () => {
+      performSearch(input.value);
+      input.value = '';
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { performSearch(input.value); input.value = ''; }
+    });
+
+    input.addEventListener('focus', showDropdown);
+    input.addEventListener('blur', hideDropdown);
+
+    dropdown.addEventListener('click', (e) => {
+      const item = e.target.closest('.search-hist-item');
+      if (item) {
+        input.value = item.dataset.query;
+        performSearch(item.dataset.query);
+        input.value = '';
+      }
+    });
+
+    document.getElementById('search-history-list').addEventListener('click', (e) => {
+      const item = e.target.closest('.search-hist-item');
+      if (item) {
+        input.value = item.dataset.query;
+        document.getElementById('tab-search').scrollIntoView();
+        performSearch(item.dataset.query);
+        input.value = '';
+      }
+    });
+
+    document.getElementById('clear-history').addEventListener('click', () => {
+      localStorage.removeItem(KEY);
+      renderHistoryList();
+      document.getElementById('search-results').style.display = 'none';
+    });
+  };
+
+  return { init };
+})();
+
+
+/* ═══════════════════════════════════════════════
+   AUTO-SAVE FORM  (Task 13.3 + Day 3 ✅)
+   Uses sessionStorage — clears on tab close
+   ═══════════════════════════════════════════════ */
+const FormApp = (() => {
+  const PREFIX = 'form_';
+  const fields = ['f-name', 'f-email', 'f-subject', 'f-message'];
+  let autoSaveTimer = null;
+
+  const loadSaved = () => {
+    fields.forEach(id => {
+      const saved = sessionStorage.getItem(`${PREFIX}${id}`);
+      if (saved) document.getElementById(id).value = saved;
+    });
+  };
+
+  const saveAll = () => {
+    fields.forEach(id => {
+      sessionStorage.setItem(`${PREFIX}${id}`, document.getElementById(id).value);
+    });
+    const dot = document.getElementById('save-dot');
+    const status = document.getElementById('save-status');
+    dot.classList.add('saved');
+    status.textContent = `Auto-saved at ${new Date().toLocaleTimeString()}`;
+    setTimeout(() => dot.classList.remove('saved'), 1000);
+  };
+
+  const clearStorage = () => {
+    fields.forEach(id => sessionStorage.removeItem(`${PREFIX}${id}`));
+  };
+
+  const clearForm = () => {
+    fields.forEach(id => { document.getElementById(id).value = ''; });
+    clearStorage();
+    document.getElementById('save-status').textContent = 'Data cleared.';
+  };
+
+  const init = () => {
+    loadSaved();
+
+    // Save every 5 seconds
+    autoSaveTimer = setInterval(saveAll, 5000);
+
+    // Also save on input for immediate backup
+    fields.forEach(id => {
+      document.getElementById(id).addEventListener('input', () => {
+        sessionStorage.setItem(`${PREFIX}${id}`, document.getElementById(id).value);
+        document.getElementById('save-status').textContent = 'Typing… will save shortly';
+        document.getElementById('save-dot').classList.remove('saved');
+      });
+    });
+
+    document.getElementById('form-submit').addEventListener('click', () => {
+      const hasContent = fields.some(id => document.getElementById(id).value.trim());
+      if (!hasContent) { alert('Please fill in at least one field.'); return; }
+      clearStorage();
+      document.getElementById('contact-form').style.display = 'none';
+      document.getElementById('form-success').style.display = 'block';
+    });
+
+    document.getElementById('form-clear').addEventListener('click', clearForm);
+
+    document.getElementById('form-reset').addEventListener('click', () => {
+      clearForm();
+      document.getElementById('contact-form').style.display = 'block';
+      document.getElementById('form-success').style.display = 'none';
+      document.getElementById('save-status').textContent = 'Waiting to save…';
+    });
+  };
+
+  return { init };
+})();
+
+
+/* ═══════════════════════════════════════════════
+   TAB NAVIGATION
+   ═══════════════════════════════════════════════ */
+const TabManager = (() => {
+  const init = () => {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.dataset.tab;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(s => s.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(`tab-${target}`).classList.add('active');
+
+        // Init search app lazily on first visit
+        if (target === 'search') SearchApp.init();
+        if (target === 'form') FormApp.init();
+      });
+    });
+  };
+  return { init };
+})();
+
+TabManager.init();
+</script>
+</body>
+</html>
