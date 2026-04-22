@@ -1,8 +1,8 @@
 # Week 7: JavaScript Best Practices
 
 ## Author
-- **Name:** Maisori Kitayama
-- **GitHub:** [@MaisoriKitayama](https://github.com/MaisoriKitayama)
+- **Name:**Chesemchaniel 
+- **GitHub:** [@Chesem Chaniel](https://github.com/Chesem chaniel)
 - **Date:** April 21, 2026
 
 ## Project Description
@@ -52,4 +52,4 @@ A single-page JavaScript application demonstrating professional coding practices
 Open `index.html` in any modern browser. No build step required.
 
 ## Live Demo
-[View Live Demo](https://github.com/MaisoriKitayama/iyf-s10-week-07-MaisoriKitayama)
+[View Live Demo](https://github.com/chesem chaniel/iyf-s10-week-07-MaisoriKitayama)
